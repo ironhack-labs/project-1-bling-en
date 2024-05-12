@@ -1,0 +1,2128 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.4.550">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+
+<title>Cohort Analysis for Ironhack Payments</title>
+<style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+/* CSS for syntax highlighting */
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+</style>
+
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.5.1/jquery.min.js" integrity="sha512-bLT0Qm9VnAYZDflyKcBaQ2gg0hSYNQrJ8RilYldYQ1FxQYoCLtUjuuRuZo+fjqhx/qtq/1itJ0C2ejDxltZVFg==" crossorigin="anonymous"></script><script src="Report_files/libs/clipboard/clipboard.min.js"></script>
+<script src="Report_files/libs/quarto-html/quarto.js"></script>
+<script src="Report_files/libs/quarto-html/popper.min.js"></script>
+<script src="Report_files/libs/quarto-html/tippy.umd.min.js"></script>
+<script src="Report_files/libs/quarto-html/anchor.min.js"></script>
+<link href="Report_files/libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="Report_files/libs/quarto-html/quarto-syntax-highlighting.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="Report_files/libs/bootstrap/bootstrap.min.js"></script>
+<link href="Report_files/libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="Report_files/libs/bootstrap/bootstrap.min.css" rel="stylesheet" id="quarto-bootstrap" data-mode="light">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.6/require.min.js" integrity="sha512-c3Nl8+7g4LMSTdrm621y7kf9v3SDPnhxLNhcjFJbKECVnmZHTdo+IRO05sNLTH/D3vA6u1X32ehoLC7WFVdheg==" crossorigin="anonymous"></script>
+
+<script type="application/javascript">define('jquery', [],function() {return window.jQuery;})</script>
+
+  <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+  <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml-full.js" type="text/javascript"></script>
+
+<script type="text/javascript">
+const typesetMath = (el) => {
+  if (window.MathJax) {
+    // MathJax Typeset
+    window.MathJax.typeset([el]);
+  } else if (window.katex) {
+    // KaTeX Render
+    var mathElements = el.getElementsByClassName("math");
+    var macros = [];
+    for (var i = 0; i < mathElements.length; i++) {
+      var texText = mathElements[i].firstChild;
+      if (mathElements[i].tagName == "SPAN") {
+        window.katex.render(texText.data, mathElements[i], {
+          displayMode: mathElements[i].classList.contains('display'),
+          throwOnError: false,
+          macros: macros,
+          fleqn: false
+        });
+      }
+    }
+  }
+}
+window.Quarto = {
+  typesetMath
+};
+</script>
+
+</head>
+
+<body>
+
+<div id="quarto-content" class="page-columns page-rows-contents page-layout-full">
+<div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+  <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">Table of contents</h2>
+   
+  <ul>
+  <li><a href="#exploratory-data-analysis" id="toc-exploratory-data-analysis" class="nav-link active" data-scroll-target="#exploratory-data-analysis">Exploratory Data Analysis</a></li>
+  <li><a href="#data-quality-analysis-report" id="toc-data-quality-analysis-report" class="nav-link" data-scroll-target="#data-quality-analysis-report">Data Quality Analysis Report</a></li>
+  <li><a href="#metrics-analysis" id="toc-metrics-analysis" class="nav-link" data-scroll-target="#metrics-analysis">Metrics Analysis</a>
+  <ul class="collapse">
+  <li><a href="#frequency-of-service-usage" id="toc-frequency-of-service-usage" class="nav-link" data-scroll-target="#frequency-of-service-usage">1. Frequency of Service Usage</a></li>
+  <li><a href="#incident-rate" id="toc-incident-rate" class="nav-link" data-scroll-target="#incident-rate">2. Incident Rate</a></li>
+  <li><a href="#revenue-generated-by-the-cohort" id="toc-revenue-generated-by-the-cohort" class="nav-link" data-scroll-target="#revenue-generated-by-the-cohort">3. Revenue Generated by the Cohort</a></li>
+  <li><a href="#new-relevant-metric" id="toc-new-relevant-metric" class="nav-link" data-scroll-target="#new-relevant-metric">4. New Relevant Metric</a></li>
+  </ul></li>
+  <li><a href="#final-considerations" id="toc-final-considerations" class="nav-link" data-scroll-target="#final-considerations">Final considerations</a></li>
+  </ul>
+</nav>
+</div>
+<main class="content column-page-left" id="quarto-document-content">
+
+<header id="title-block-header" class="quarto-title-block default">
+<div class="quarto-title">
+<h1 class="title">Cohort Analysis for Ironhack Payments</h1>
+</div>
+
+
+
+<div class="quarto-title-meta column-page-left">
+
+    
+  
+    
+  </div>
+  
+
+
+</header>
+
+
+<div id="cell-1" class="cell" data-execution_count="1">
+<div class="sourceCode cell-code" id="cb1"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="co"># To avoid confusion, we will disable warnings</span></span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> warnings</span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a>warnings.filterwarnings(<span class="st">'ignore'</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<section id="exploratory-data-analysis" class="level2">
+<h2 class="anchored" data-anchor-id="exploratory-data-analysis">Exploratory Data Analysis</h2>
+<blockquote class="blockquote">
+<p>First, let’s make sure we have the required modules</p>
+</blockquote>
+<div id="cell-4" class="cell" data-execution_count="2">
+<div class="sourceCode cell-code" id="cb2"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="co"># uncomment the rows bellow to install the modules</span></span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a><span class="co"># !pip install numpy</span></span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a><span class="co"># !pip install pandas</span></span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a><span class="co"># !pip install seaborn</span></span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a><span class="co"># !pip install matplotlib</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div class="callout callout-style-default callout-tip callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Tip
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>When using environments, replace !pip with %pip</p>
+</div>
+</div>
+<blockquote class="blockquote">
+<p>Now let’s import the modules</p>
+</blockquote>
+<div id="cell-7" class="cell" data-execution_count="3">
+<div class="sourceCode cell-code" id="cb3"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> numpy <span class="im">as</span> np</span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> pandas <span class="im">as</span> pd</span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> seaborn <span class="im">as</span> sns</span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> matplotlib.pyplot <span class="im">as</span> plt</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<blockquote class="blockquote">
+<p>And now let’s load the CSV files we’ll be using</p>
+</blockquote>
+<div id="cell-9" class="cell" data-execution_count="4">
+<div class="sourceCode cell-code" id="cb4"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a>cash_df <span class="op">=</span> pd.read_csv(<span class="st">'project_dataset/extract - cash request - data analyst.csv'</span>)</span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a>fees_df <span class="op">=</span> pd.read_csv(<span class="st">'project_dataset/extract - fees - data analyst - .csv'</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<blockquote class="blockquote">
+<p>Now we can start our exploratory analysis.</p>
+</blockquote>
+<div class="callout callout-style-default callout-note callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Note
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>With <code>pandas</code> we can use <a href="https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.DataFrame.head.html"><code>.head()</code></a> or <a href="https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.DataFrame.tail.html"><code>.tail()</code></a>, <a href="https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.DataFrame.info.html"><code>.info()</code></a>, <a href="https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.DataFrame.shape.html"><code>.shape</code></a> and <a href="https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.DataFrame.describe.html"><code>.describe()</code></a> to get a quick view of the data.<br>
+We can also use <a href="https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.DataFrame.sample.html"><code>.sample(&lt;number of samples&gt;)</code></a> to see some randomly selected rows.</p>
+</div>
+</div>
+<div id="cell-11" class="cell" data-execution_count="5">
+<div class="sourceCode cell-code" id="cb5"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a>cash_df.shape</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display" data-execution_count="5">
+<pre><code>(23970, 16)</code></pre>
+</div>
+</div>
+<div id="cell-12" class="cell" data-execution_count="6">
+<div class="sourceCode cell-code" id="cb7"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a>cash_df.sample(<span class="dv">5</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display" data-execution_count="6">
+<div>
+<div>
+
+
+<table class="dataframe table table-sm table-striped small" data-quarto-postprocess="true" data-border="1">
+<thead>
+<tr class="header">
+<th data-quarto-table-cell-role="th"></th>
+<th data-quarto-table-cell-role="th">id</th>
+<th data-quarto-table-cell-role="th">amount</th>
+<th data-quarto-table-cell-role="th">status</th>
+<th data-quarto-table-cell-role="th">created_at</th>
+<th data-quarto-table-cell-role="th">updated_at</th>
+<th data-quarto-table-cell-role="th">user_id</th>
+<th data-quarto-table-cell-role="th">moderated_at</th>
+<th data-quarto-table-cell-role="th">deleted_account_id</th>
+<th data-quarto-table-cell-role="th">reimbursement_date</th>
+<th data-quarto-table-cell-role="th">cash_request_received_date</th>
+<th data-quarto-table-cell-role="th">money_back_date</th>
+<th data-quarto-table-cell-role="th">transfer_type</th>
+<th data-quarto-table-cell-role="th">send_at</th>
+<th data-quarto-table-cell-role="th">recovery_status</th>
+<th data-quarto-table-cell-role="th">reco_creation</th>
+<th data-quarto-table-cell-role="th">reco_last_update</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td data-quarto-table-cell-role="th">9181</td>
+<td>258</td>
+<td>100.0</td>
+<td>money_back</td>
+<td>2019-12-19 18:47:48.08997+00</td>
+<td>2020-11-04 12:55:39.86506+00</td>
+<td>1875.0</td>
+<td>2019-12-20 17:33:48.770853+00</td>
+<td>NaN</td>
+<td>2020-01-02 23:00:00+00</td>
+<td>2019-12-24</td>
+<td>2020-07-07 22:00:00+00</td>
+<td>regular</td>
+<td>NaN</td>
+<td>completed</td>
+<td>2020-04-10 21:38:11.508768+00</td>
+<td>2020-07-14 15:07:29.791499+00</td>
+</tr>
+<tr class="even">
+<td data-quarto-table-cell-role="th">5372</td>
+<td>13291</td>
+<td>100.0</td>
+<td>rejected</td>
+<td>2020-08-20 03:02:23.506065+00</td>
+<td>2020-08-20 09:23:50.731707+00</td>
+<td>18856.0</td>
+<td>2020-08-20 09:23:50.725651+00</td>
+<td>NaN</td>
+<td>2020-09-07 22:00:00+00</td>
+<td>NaN</td>
+<td>NaN</td>
+<td>regular</td>
+<td>2020-08-27 03:02:23.457008+00</td>
+<td>NaN</td>
+<td>NaN</td>
+<td>NaN</td>
+</tr>
+<tr class="odd">
+<td data-quarto-table-cell-role="th">1260</td>
+<td>2853</td>
+<td>100.0</td>
+<td>rejected</td>
+<td>2020-06-10 05:10:41.029379+00</td>
+<td>2020-06-10 15:14:13.967513+00</td>
+<td>6925.0</td>
+<td>2020-06-10 15:14:13.962455+00</td>
+<td>NaN</td>
+<td>2020-07-05 22:00:00+00</td>
+<td>NaN</td>
+<td>NaN</td>
+<td>regular</td>
+<td>NaN</td>
+<td>NaN</td>
+<td>NaN</td>
+<td>NaN</td>
+</tr>
+<tr class="even">
+<td data-quarto-table-cell-role="th">5093</td>
+<td>12419</td>
+<td>100.0</td>
+<td>rejected</td>
+<td>2020-08-14 03:51:40.857999+00</td>
+<td>2020-08-14 08:09:57.892999+00</td>
+<td>NaN</td>
+<td>2020-08-14 08:09:57.888866+00</td>
+<td>4079.0</td>
+<td>2020-09-07 22:00:00+00</td>
+<td>NaN</td>
+<td>NaN</td>
+<td>instant</td>
+<td>2020-08-21 03:51:40.805214+00</td>
+<td>NaN</td>
+<td>NaN</td>
+<td>NaN</td>
+</tr>
+<tr class="odd">
+<td data-quarto-table-cell-role="th">15185</td>
+<td>14958</td>
+<td>100.0</td>
+<td>money_back</td>
+<td>2020-09-07 12:22:49.047822+00</td>
+<td>2020-12-18 13:10:28.23736+00</td>
+<td>3358.0</td>
+<td>2020-09-07 13:23:58.641113+00</td>
+<td>NaN</td>
+<td>2020-10-01 22:00:00+00</td>
+<td>2020-09-08</td>
+<td>2020-10-02 18:59:02.147202+00</td>
+<td>instant</td>
+<td>2020-09-14 12:22:48.998382+00</td>
+<td>NaN</td>
+<td>NaN</td>
+<td>NaN</td>
+</tr>
+</tbody>
+</table>
+
+</div>
+</div>
+</div>
+</div>
+<div id="cell-13" class="cell" data-execution_count="7">
+<div class="sourceCode cell-code" id="cb8"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a>cash_df.info()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>&lt;class 'pandas.core.frame.DataFrame'&gt;
+RangeIndex: 23970 entries, 0 to 23969
+Data columns (total 16 columns):
+ #   Column                      Non-Null Count  Dtype  
+---  ------                      --------------  -----  
+ 0   id                          23970 non-null  int64  
+ 1   amount                      23970 non-null  float64
+ 2   status                      23970 non-null  object 
+ 3   created_at                  23970 non-null  object 
+ 4   updated_at                  23970 non-null  object 
+ 5   user_id                     21867 non-null  float64
+ 6   moderated_at                16035 non-null  object 
+ 7   deleted_account_id          2104 non-null   float64
+ 8   reimbursement_date          23970 non-null  object 
+ 9   cash_request_received_date  16289 non-null  object 
+ 10  money_back_date             16543 non-null  object 
+ 11  transfer_type               23970 non-null  object 
+ 12  send_at                     16641 non-null  object 
+ 13  recovery_status             3330 non-null   object 
+ 14  reco_creation               3330 non-null   object 
+ 15  reco_last_update            3330 non-null   object 
+dtypes: float64(3), int64(1), object(12)
+memory usage: 2.9+ MB</code></pre>
+</div>
+</div>
+<div id="cell-14" class="cell" data-execution_count="8">
+<div class="sourceCode cell-code" id="cb10"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a>fees_df.shape</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display" data-execution_count="8">
+<pre><code>(21061, 13)</code></pre>
+</div>
+</div>
+<div id="cell-15" class="cell" data-execution_count="9">
+<div class="sourceCode cell-code" id="cb12"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a>fees_df.sample(<span class="dv">5</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display" data-execution_count="9">
+<div>
+<div>
+
+
+<table class="dataframe table table-sm table-striped small" data-quarto-postprocess="true" data-border="1">
+<thead>
+<tr class="header">
+<th data-quarto-table-cell-role="th"></th>
+<th data-quarto-table-cell-role="th">id</th>
+<th data-quarto-table-cell-role="th">cash_request_id</th>
+<th data-quarto-table-cell-role="th">type</th>
+<th data-quarto-table-cell-role="th">status</th>
+<th data-quarto-table-cell-role="th">category</th>
+<th data-quarto-table-cell-role="th">total_amount</th>
+<th data-quarto-table-cell-role="th">reason</th>
+<th data-quarto-table-cell-role="th">created_at</th>
+<th data-quarto-table-cell-role="th">updated_at</th>
+<th data-quarto-table-cell-role="th">paid_at</th>
+<th data-quarto-table-cell-role="th">from_date</th>
+<th data-quarto-table-cell-role="th">to_date</th>
+<th data-quarto-table-cell-role="th">charge_moment</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td data-quarto-table-cell-role="th">18778</td>
+<td>16762</td>
+<td>23831.0</td>
+<td>instant_payment</td>
+<td>rejected</td>
+<td>NaN</td>
+<td>5.0</td>
+<td>Instant Payment Cash Request 23831</td>
+<td>2020-10-23 22:54:09.104657+00</td>
+<td>2020-10-23 22:54:09.104685+00</td>
+<td>2020-12-12 19:59:47.929491+00</td>
+<td>NaN</td>
+<td>NaN</td>
+<td>after</td>
+</tr>
+<tr class="even">
+<td data-quarto-table-cell-role="th">20144</td>
+<td>10917</td>
+<td>6606.0</td>
+<td>incident</td>
+<td>cancelled</td>
+<td>month_delay_on_payment</td>
+<td>5.0</td>
+<td>month delay on payment - 10/2020</td>
+<td>2020-10-04 23:53:57.587754+00</td>
+<td>2020-12-15 17:07:43.273605+00</td>
+<td>2020-10-30 04:39:13.484808+00</td>
+<td>NaN</td>
+<td>NaN</td>
+<td>after</td>
+</tr>
+<tr class="odd">
+<td data-quarto-table-cell-role="th">9514</td>
+<td>10886</td>
+<td>18257.0</td>
+<td>postpone</td>
+<td>cancelled</td>
+<td>NaN</td>
+<td>5.0</td>
+<td>Postpone Cash Request 18257</td>
+<td>2020-10-04 20:55:39.329791+00</td>
+<td>2020-10-13 14:25:03.272754+00</td>
+<td>NaN</td>
+<td>2020-10-05 22:00:00+00</td>
+<td>2020-10-16 10:00:00+00</td>
+<td>after</td>
+</tr>
+<tr class="even">
+<td data-quarto-table-cell-role="th">16965</td>
+<td>12644</td>
+<td>20460.0</td>
+<td>instant_payment</td>
+<td>accepted</td>
+<td>NaN</td>
+<td>5.0</td>
+<td>Instant Payment Cash Request 20460</td>
+<td>2020-10-11 13:09:38.523214+00</td>
+<td>2020-10-13 14:25:16.631233+00</td>
+<td>2020-11-03 19:42:16.315178+00</td>
+<td>NaN</td>
+<td>NaN</td>
+<td>after</td>
+</tr>
+<tr class="odd">
+<td data-quarto-table-cell-role="th">6439</td>
+<td>21066</td>
+<td>20511.0</td>
+<td>postpone</td>
+<td>accepted</td>
+<td>NaN</td>
+<td>5.0</td>
+<td>Postpone Cash Request 20511</td>
+<td>2020-11-01 15:26:49.073646+00</td>
+<td>2020-11-01 15:26:53.086795+00</td>
+<td>2020-11-01 15:26:53.362627+00</td>
+<td>2020-11-04 22:00:00+00</td>
+<td>2020-11-10 11:00:00+00</td>
+<td>before</td>
+</tr>
+</tbody>
+</table>
+
+</div>
+</div>
+</div>
+</div>
+<div id="cell-16" class="cell" data-execution_count="10">
+<div class="sourceCode cell-code" id="cb13"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a>fees_df.info()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>&lt;class 'pandas.core.frame.DataFrame'&gt;
+RangeIndex: 21061 entries, 0 to 21060
+Data columns (total 13 columns):
+ #   Column           Non-Null Count  Dtype  
+---  ------           --------------  -----  
+ 0   id               21061 non-null  int64  
+ 1   cash_request_id  21057 non-null  float64
+ 2   type             21061 non-null  object 
+ 3   status           21061 non-null  object 
+ 4   category         2196 non-null   object 
+ 5   total_amount     21061 non-null  float64
+ 6   reason           21061 non-null  object 
+ 7   created_at       21061 non-null  object 
+ 8   updated_at       21061 non-null  object 
+ 9   paid_at          15531 non-null  object 
+ 10  from_date        7766 non-null   object 
+ 11  to_date          7766 non-null   object 
+ 12  charge_moment    21061 non-null  object 
+dtypes: float64(2), int64(1), object(10)
+memory usage: 2.1+ MB</code></pre>
+</div>
+</div>
+<blockquote class="blockquote">
+<p>We already notice that we have some columns with <strong>numbers</strong> (<code>amount</code> in <code>cash_df</code> and <code>total_amount</code> in <code>fees_df</code>), <strong>datetime</strong> (<code>created_at</code>, <code>updated_at</code> etc) and <strong>object</strong> (<code>status</code>, <code>transfer_type</code> etc).<br>
+Let’s list the <code>unique()</code> values for latter.</p>
+</blockquote>
+<div id="cell-18" class="cell" data-execution_count="11">
+<div class="sourceCode cell-code" id="cb15"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="ss">f"status: </span><span class="sc">{</span>cash_df[<span class="st">'status'</span>]<span class="sc">.</span>unique()<span class="sc">}</span><span class="ss">"</span>)</span>
+<span id="cb15-2"><a href="#cb15-2" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="ss">f"transfer_type: </span><span class="sc">{</span>cash_df[<span class="st">'transfer_type'</span>]<span class="sc">.</span>unique()<span class="sc">}</span><span class="ss">"</span>)</span>
+<span id="cb15-3"><a href="#cb15-3" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="ss">f"recover_status: </span><span class="sc">{</span>cash_df[<span class="st">'recovery_status'</span>]<span class="sc">.</span>unique()<span class="sc">}</span><span class="ss">"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>status: ['rejected' 'money_back' 'canceled' 'active' 'direct_debit_rejected'
+ 'transaction_declined' 'direct_debit_sent']
+transfer_type: ['regular' 'instant']
+recover_status: [nan 'completed' 'pending' 'pending_direct_debit' 'cancelled']</code></pre>
+</div>
+</div>
+<div class="callout callout-style-default callout-important callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Important
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>Let’s make a note that we have some <code>nan</code> (not-a-number) values - we’ll get to that in a bit.</p>
+</div>
+</div>
+<div id="cell-20" class="cell" data-execution_count="12">
+<div class="sourceCode cell-code" id="cb17"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="ss">f"type: </span><span class="sc">{</span>fees_df[<span class="st">'type'</span>]<span class="sc">.</span>unique()<span class="sc">}</span><span class="ss">"</span>)</span>
+<span id="cb17-2"><a href="#cb17-2" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="ss">f"status: </span><span class="sc">{</span>fees_df[<span class="st">'status'</span>]<span class="sc">.</span>unique()<span class="sc">}</span><span class="ss">"</span>)</span>
+<span id="cb17-3"><a href="#cb17-3" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="ss">f"category: </span><span class="sc">{</span>fees_df[<span class="st">'category'</span>]<span class="sc">.</span>unique()<span class="sc">}</span><span class="ss">"</span>)</span>
+<span id="cb17-4"><a href="#cb17-4" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="ss">f"charge_moment: </span><span class="sc">{</span>fees_df[<span class="st">'charge_moment'</span>]<span class="sc">.</span>unique()<span class="sc">}</span><span class="ss">"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>type: ['instant_payment' 'incident' 'postpone']
+status: ['rejected' 'accepted' 'cancelled' 'confirmed']
+category: [nan 'rejected_direct_debit' 'month_delay_on_payment']
+charge_moment: ['after' 'before']</code></pre>
+</div>
+</div>
+</section>
+<section id="data-quality-analysis-report" class="level2">
+<h2 class="anchored" data-anchor-id="data-quality-analysis-report">Data Quality Analysis Report</h2>
+<blockquote class="blockquote">
+<p>Now that we’ve got an idea of the data, let’s check if there are any missing (empty or <code>null</code>) values in our dataframes.<br>
+We can use <a href="https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.DataFrame.isna.html"><code>.isna()</code></a> (or its alias - <code>isnull()</code>) and the inverse <a href="https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.DataFrame.notna.html#pandas.DataFrame.notna"><code>notna()</code></a> to check if a value is <strong>null</strong>.</p>
+</blockquote>
+<div id="cell-23" class="cell" data-execution_count="13">
+<div class="sourceCode cell-code" id="cb19"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb19-1"><a href="#cb19-1" aria-hidden="true" tabindex="-1"></a>cash_df.isna().<span class="bu">sum</span>() <span class="co"># by appending .sum() we get a sum of Null values, per row</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display" data-execution_count="13">
+<pre><code>id                                0
+amount                            0
+status                            0
+created_at                        0
+updated_at                        0
+user_id                        2103
+moderated_at                   7935
+deleted_account_id            21866
+reimbursement_date                0
+cash_request_received_date     7681
+money_back_date                7427
+transfer_type                     0
+send_at                        7329
+recovery_status               20640
+reco_creation                 20640
+reco_last_update              20640
+dtype: int64</code></pre>
+</div>
+</div>
+<blockquote class="blockquote">
+<p>We notice that the <code>user_id</code> column has 2103 <code>nan</code> values - but we also have a <code>deleted_account_id</code> column which contains id’s for deleted user accounts.<br>
+Let’s check if there are rows where both <code>user_id</code> and <code>deleted_account_id</code> are empty.</p>
+</blockquote>
+<div id="cell-25" class="cell" data-execution_count="14">
+<div class="sourceCode cell-code" id="cb21"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb21-1"><a href="#cb21-1" aria-hidden="true" tabindex="-1"></a>(cash_df[<span class="st">'user_id'</span>].isna() <span class="op">&amp;</span> (cash_df[<span class="st">'deleted_account_id'</span>].isna())).<span class="bu">sum</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display" data-execution_count="14">
+<pre><code>0</code></pre>
+</div>
+</div>
+<blockquote class="blockquote">
+<p>For the rest of the columns <code>nan</code> values are not necessarily a problem, so we won’t investigate them further.<br>
+Now let’s look at <code>fees_df</code></p>
+</blockquote>
+<div id="cell-27" class="cell" data-execution_count="15">
+<div class="sourceCode cell-code" id="cb23"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb23-1"><a href="#cb23-1" aria-hidden="true" tabindex="-1"></a>fees_df.isna().<span class="bu">sum</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display" data-execution_count="15">
+<pre><code>id                     0
+cash_request_id        4
+type                   0
+status                 0
+category           18865
+total_amount           0
+reason                 0
+created_at             0
+updated_at             0
+paid_at             5530
+from_date          13295
+to_date            13295
+charge_moment          0
+dtype: int64</code></pre>
+</div>
+</div>
+<blockquote class="blockquote">
+<p>We notice there are 4 rows that don’t have a value for <code>cash_request_id</code></p>
+</blockquote>
+<div class="callout callout-style-default callout-tip callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Tip
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>The <code>isna()</code> function creates a <strong>mask</strong> with <code>True/False</code> where the values in the dataframe are <code>Null</code>. We can then use this <strong>mask</strong> to select rows from the dataframe</p>
+</div>
+</div>
+<div id="cell-30" class="cell" data-execution_count="16">
+<div class="sourceCode cell-code" id="cb25"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb25-1"><a href="#cb25-1" aria-hidden="true" tabindex="-1"></a>fees_df[fees_df[<span class="st">'cash_request_id'</span>].isna()]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display" data-execution_count="16">
+<div>
+<div>
+
+
+<table class="dataframe table table-sm table-striped small" data-quarto-postprocess="true" data-border="1">
+<thead>
+<tr class="header">
+<th data-quarto-table-cell-role="th"></th>
+<th data-quarto-table-cell-role="th">id</th>
+<th data-quarto-table-cell-role="th">cash_request_id</th>
+<th data-quarto-table-cell-role="th">type</th>
+<th data-quarto-table-cell-role="th">status</th>
+<th data-quarto-table-cell-role="th">category</th>
+<th data-quarto-table-cell-role="th">total_amount</th>
+<th data-quarto-table-cell-role="th">reason</th>
+<th data-quarto-table-cell-role="th">created_at</th>
+<th data-quarto-table-cell-role="th">updated_at</th>
+<th data-quarto-table-cell-role="th">paid_at</th>
+<th data-quarto-table-cell-role="th">from_date</th>
+<th data-quarto-table-cell-role="th">to_date</th>
+<th data-quarto-table-cell-role="th">charge_moment</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td data-quarto-table-cell-role="th">1911</td>
+<td>2990</td>
+<td>NaN</td>
+<td>instant_payment</td>
+<td>cancelled</td>
+<td>NaN</td>
+<td>5.0</td>
+<td>Instant Payment Cash Request 11164</td>
+<td>2020-08-06 22:42:34.525373+00</td>
+<td>2020-11-04 16:01:17.296048+00</td>
+<td>NaN</td>
+<td>NaN</td>
+<td>NaN</td>
+<td>after</td>
+</tr>
+<tr class="even">
+<td data-quarto-table-cell-role="th">1960</td>
+<td>3124</td>
+<td>NaN</td>
+<td>instant_payment</td>
+<td>cancelled</td>
+<td>NaN</td>
+<td>5.0</td>
+<td>Instant Payment Cash Request 11444</td>
+<td>2020-08-08 06:33:06.244651+00</td>
+<td>2020-11-04 16:01:08.332978+00</td>
+<td>NaN</td>
+<td>NaN</td>
+<td>NaN</td>
+<td>after</td>
+</tr>
+<tr class="odd">
+<td data-quarto-table-cell-role="th">4605</td>
+<td>5185</td>
+<td>NaN</td>
+<td>instant_payment</td>
+<td>cancelled</td>
+<td>NaN</td>
+<td>5.0</td>
+<td>Instant Payment Cash Request 11788</td>
+<td>2020-08-26 09:39:37.362933+00</td>
+<td>2020-11-04 16:01:36.492576+00</td>
+<td>NaN</td>
+<td>NaN</td>
+<td>NaN</td>
+<td>after</td>
+</tr>
+<tr class="even">
+<td data-quarto-table-cell-role="th">11870</td>
+<td>3590</td>
+<td>NaN</td>
+<td>instant_payment</td>
+<td>cancelled</td>
+<td>NaN</td>
+<td>5.0</td>
+<td>Instant Payment Cash Request 12212</td>
+<td>2020-08-12 14:20:06.657075+00</td>
+<td>2020-11-04 16:01:53.106416+00</td>
+<td>NaN</td>
+<td>NaN</td>
+<td>NaN</td>
+<td>after</td>
+</tr>
+</tbody>
+</table>
+
+</div>
+</div>
+</div>
+</div>
+<blockquote class="blockquote">
+<p>As the <code>cash_request_id</code> is a reference to the <code>id</code> from the <code>cash_df</code> dataframe, and there are only 4 rows, we can safely remove/ignore these instances.</p>
+</blockquote>
+<div class="callout callout-style-default callout-tip callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Tip
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>We can use the inverse method <code>.notna()</code> and re-assign <code>fees_df</code> to the dataframe without <code>Null</code> values.</p>
+</div>
+</div>
+<div id="cell-33" class="cell" data-execution_count="17">
+<div class="sourceCode cell-code" id="cb26"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb26-1"><a href="#cb26-1" aria-hidden="true" tabindex="-1"></a>fees_df <span class="op">=</span> fees_df[fees_df[<span class="st">'cash_request_id'</span>].notna()]</span>
+<span id="cb26-2"><a href="#cb26-2" aria-hidden="true" tabindex="-1"></a>fees_df.isna().<span class="bu">sum</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display" data-execution_count="17">
+<pre><code>id                     0
+cash_request_id        0
+type                   0
+status                 0
+category           18861
+total_amount           0
+reason                 0
+created_at             0
+updated_at             0
+paid_at             5526
+from_date          13291
+to_date            13291
+charge_moment          0
+dtype: int64</code></pre>
+</div>
+</div>
+</section>
+<section id="metrics-analysis" class="level2">
+<h2 class="anchored" data-anchor-id="metrics-analysis">Metrics Analysis</h2>
+<blockquote class="blockquote">
+<p>Before we can actually do our analysis, we need to prepare the dataframes for easier manipulation.<br>
+For this we’ll convert the datetime values to the correct type.</p>
+</blockquote>
+<div id="cell-36" class="cell" data-execution_count="18">
+<div class="sourceCode cell-code" id="cb28"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb28-1"><a href="#cb28-1" aria-hidden="true" tabindex="-1"></a>datetime_columns_cash <span class="op">=</span> [<span class="st">'created_at'</span>, <span class="st">'updated_at'</span>, <span class="st">'moderated_at'</span>, <span class="st">'reimbursement_date'</span>,<span class="op">\</span></span>
+<span id="cb28-2"><a href="#cb28-2" aria-hidden="true" tabindex="-1"></a>                          <span class="st">'cash_request_received_date'</span>, <span class="st">'money_back_date'</span>, <span class="st">'send_at'</span>,<span class="op">\</span></span>
+<span id="cb28-3"><a href="#cb28-3" aria-hidden="true" tabindex="-1"></a>                         <span class="st">'reco_creation'</span>, <span class="st">'reco_last_update'</span>]</span>
+<span id="cb28-4"><a href="#cb28-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb28-5"><a href="#cb28-5" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> column <span class="kw">in</span> datetime_columns_cash:</span>
+<span id="cb28-6"><a href="#cb28-6" aria-hidden="true" tabindex="-1"></a>    cash_df[column] <span class="op">=</span> pd.to_datetime(cash_df[column]) <span class="co"># in python3.11.8 we need to add format='mixed'</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div id="cell-37" class="cell" data-execution_count="19">
+<div class="sourceCode cell-code" id="cb29"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb29-1"><a href="#cb29-1" aria-hidden="true" tabindex="-1"></a>cash_df.info()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>&lt;class 'pandas.core.frame.DataFrame'&gt;
+RangeIndex: 23970 entries, 0 to 23969
+Data columns (total 16 columns):
+ #   Column                      Non-Null Count  Dtype              
+---  ------                      --------------  -----              
+ 0   id                          23970 non-null  int64              
+ 1   amount                      23970 non-null  float64            
+ 2   status                      23970 non-null  object             
+ 3   created_at                  23970 non-null  datetime64[ns, UTC]
+ 4   updated_at                  23970 non-null  datetime64[ns, UTC]
+ 5   user_id                     21867 non-null  float64            
+ 6   moderated_at                16035 non-null  datetime64[ns, UTC]
+ 7   deleted_account_id          2104 non-null   float64            
+ 8   reimbursement_date          23970 non-null  datetime64[ns, UTC]
+ 9   cash_request_received_date  16289 non-null  datetime64[ns]     
+ 10  money_back_date             16543 non-null  datetime64[ns, UTC]
+ 11  transfer_type               23970 non-null  object             
+ 12  send_at                     16641 non-null  datetime64[ns, UTC]
+ 13  recovery_status             3330 non-null   object             
+ 14  reco_creation               3330 non-null   datetime64[ns, UTC]
+ 15  reco_last_update            3330 non-null   datetime64[ns, UTC]
+dtypes: datetime64[ns, UTC](8), datetime64[ns](1), float64(3), int64(1), object(3)
+memory usage: 2.9+ MB</code></pre>
+</div>
+</div>
+<div id="cell-38" class="cell" data-execution_count="20">
+<div class="sourceCode cell-code" id="cb31"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb31-1"><a href="#cb31-1" aria-hidden="true" tabindex="-1"></a>datetime_columns_fees <span class="op">=</span> [<span class="st">'created_at'</span>, <span class="st">'updated_at'</span>, <span class="st">'paid_at'</span>, <span class="st">'from_date'</span>, <span class="st">'to_date'</span>]</span>
+<span id="cb31-2"><a href="#cb31-2" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> column <span class="kw">in</span> datetime_columns_fees:</span>
+<span id="cb31-3"><a href="#cb31-3" aria-hidden="true" tabindex="-1"></a>    fees_df[column] <span class="op">=</span> pd.to_datetime(fees_df[column])</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div id="cell-39" class="cell" data-execution_count="21">
+<div class="sourceCode cell-code" id="cb32"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb32-1"><a href="#cb32-1" aria-hidden="true" tabindex="-1"></a>fees_df.info()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>&lt;class 'pandas.core.frame.DataFrame'&gt;
+Int64Index: 21057 entries, 0 to 21060
+Data columns (total 13 columns):
+ #   Column           Non-Null Count  Dtype              
+---  ------           --------------  -----              
+ 0   id               21057 non-null  int64              
+ 1   cash_request_id  21057 non-null  float64            
+ 2   type             21057 non-null  object             
+ 3   status           21057 non-null  object             
+ 4   category         2196 non-null   object             
+ 5   total_amount     21057 non-null  float64            
+ 6   reason           21057 non-null  object             
+ 7   created_at       21057 non-null  datetime64[ns, UTC]
+ 8   updated_at       21057 non-null  datetime64[ns, UTC]
+ 9   paid_at          15531 non-null  datetime64[ns, UTC]
+ 10  from_date        7766 non-null   datetime64[ns, UTC]
+ 11  to_date          7766 non-null   datetime64[ns, UTC]
+ 12  charge_moment    21057 non-null  object             
+dtypes: datetime64[ns, UTC](5), float64(2), int64(1), object(5)
+memory usage: 2.2+ MB</code></pre>
+</div>
+</div>
+<blockquote class="blockquote">
+<p>Now that our dataframes are cleaned and the values are of the correct type, we can start our analysis.</p>
+</blockquote>
+<section id="frequency-of-service-usage" class="level3">
+<h3 class="anchored" data-anchor-id="frequency-of-service-usage">1. Frequency of Service Usage</h3>
+<p><strong>Understand how often users from each cohort utilize IronHack Payments’ cash advance services over time.</strong></p>
+<blockquote class="blockquote">
+<p>To determine the utilisation of the IronHack Payments’ service, we first need to group users in cohorts.<br>
+We will use the <code>created_at</code> field to generate the user cohorts, split by months.</p>
+</blockquote>
+<div id="cell-43" class="cell" data-execution_count="22">
+<div class="sourceCode cell-code" id="cb34"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb34-1"><a href="#cb34-1" aria-hidden="true" tabindex="-1"></a>cash_df[<span class="st">'cohort'</span>] <span class="op">=</span> cash_df[<span class="st">'created_at'</span>].dt.to_period(<span class="st">'M'</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div id="cell-44" class="cell" data-execution_count="23">
+<div class="sourceCode cell-code" id="cb35"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb35-1"><a href="#cb35-1" aria-hidden="true" tabindex="-1"></a>cohort_counts <span class="op">=</span> cash_df.groupby(<span class="st">'cohort'</span>).size()</span>
+<span id="cb35-2"><a href="#cb35-2" aria-hidden="true" tabindex="-1"></a>cohort_counts</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display" data-execution_count="23">
+<pre><code>cohort
+2019-11       1
+2019-12     289
+2020-01     223
+2020-02     184
+2020-03     244
+2020-04     473
+2020-05     837
+2020-06    2615
+2020-07    3601
+2020-08    3417
+2020-09    4221
+2020-10    7725
+2020-11     140
+Freq: M, dtype: int64</code></pre>
+</div>
+</div>
+<blockquote class="blockquote">
+<p>By analysing the cohort sizes, we can deduct that the data is incomplete for the first (2019-11) and last (2020-11) months - to avoid confusion we will hide these months from our plot.</p>
+</blockquote>
+<div id="cell-46" class="cell" data-execution_count="24">
+<div class="sourceCode cell-code" id="cb37"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb37-1"><a href="#cb37-1" aria-hidden="true" tabindex="-1"></a>cohort_counts <span class="op">=</span> cohort_counts.iloc[<span class="dv">1</span>:<span class="op">-</span><span class="dv">1</span>]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div id="cell-47" class="cell" data-execution_count="25">
+<div class="sourceCode cell-code" id="cb38"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb38-1"><a href="#cb38-1" aria-hidden="true" tabindex="-1"></a>plt.figure(figsize<span class="op">=</span>(<span class="dv">10</span>, <span class="dv">6</span>))</span>
+<span id="cb38-2"><a href="#cb38-2" aria-hidden="true" tabindex="-1"></a>freq_use <span class="op">=</span> sns.barplot(x<span class="op">=</span>cohort_counts.index.astype(<span class="bu">str</span>), y<span class="op">=</span>cohort_counts.values, palette<span class="op">=</span><span class="st">'magma_r'</span>)</span>
+<span id="cb38-3"><a href="#cb38-3" aria-hidden="true" tabindex="-1"></a>plt.title(<span class="st">'Number of Cash Requests per Cohort'</span>)</span>
+<span id="cb38-4"><a href="#cb38-4" aria-hidden="true" tabindex="-1"></a>plt.xlabel(<span class="st">'Cohort'</span>)</span>
+<span id="cb38-5"><a href="#cb38-5" aria-hidden="true" tabindex="-1"></a>plt.ylabel(<span class="st">'Number of Cash Requests'</span>)</span>
+<span id="cb38-6"><a href="#cb38-6" aria-hidden="true" tabindex="-1"></a>plt.xticks(rotation<span class="op">=</span><span class="dv">45</span>)</span>
+<span id="cb38-7"><a href="#cb38-7" aria-hidden="true" tabindex="-1"></a>plt.tight_layout()</span>
+<span id="cb38-8"><a href="#cb38-8" aria-hidden="true" tabindex="-1"></a><span class="co"># we can also show the values directly in the plot</span></span>
+<span id="cb38-9"><a href="#cb38-9" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> i <span class="kw">in</span> freq_use.containers:</span>
+<span id="cb38-10"><a href="#cb38-10" aria-hidden="true" tabindex="-1"></a>    freq_use.bar_label(i,)</span>
+<span id="cb38-11"><a href="#cb38-11" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb38-12"><a href="#cb38-12" aria-hidden="true" tabindex="-1"></a>plt.show()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="Report_files/figure-html/cell-26-output-1.png" class="img-fluid figure-img"></p>
+</figure>
+</div>
+</div>
+</div>
+</section>
+<section id="incident-rate" class="level3">
+<h3 class="anchored" data-anchor-id="incident-rate">2. Incident Rate</h3>
+<p><strong>Determine the incident rate, specifically focusing on payment incidents, for each cohort. Identify if there are variations in incident rates among different cohorts.</strong></p>
+<blockquote class="blockquote">
+<p>To determine the <strong>Incident Rate</strong> we will look at the <code>fees_df</code> dataframe.<br>
+More specifically, we will consider an <strong>incident</strong> all the rows where <code>category</code> is <em>rejected_direct_debit</em> or <em>month_delay_on_payment</em>.<br>
+To actually determine the <strong>rate</strong> we need to calculate the percentage of <em>incidents</em> from all the fees payments.</p>
+<p>First we will merge the two dataframes using the <code>id</code> from <code>cash_df</code> and <code>cash_request_id</code> from <code>fees_df</code> as indexes.</p>
+<p>We will do a <code>inner</code> merge to assure that only the rows where there is a match between <code>id</code> and <code>cash_request_id</code> in both dataframes are included.</p>
+</blockquote>
+<div id="cell-50" class="cell" data-execution_count="26">
+<div class="sourceCode cell-code" id="cb39"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb39-1"><a href="#cb39-1" aria-hidden="true" tabindex="-1"></a>merged_df <span class="op">=</span> pd.merge(cash_df, fees_df, left_on<span class="op">=</span><span class="st">'id'</span>, right_on<span class="op">=</span><span class="st">'cash_request_id'</span>, how<span class="op">=</span><span class="st">'inner'</span>, suffixes<span class="op">=</span>[<span class="st">'_cash'</span>, <span class="st">'_fees'</span>])</span>
+<span id="cb39-2"><a href="#cb39-2" aria-hidden="true" tabindex="-1"></a>merged_df</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display" data-execution_count="26">
+<div>
+<div>
+
+
+<table class="dataframe table table-sm table-striped small" data-quarto-postprocess="true" data-border="1">
+<thead>
+<tr class="header">
+<th data-quarto-table-cell-role="th"></th>
+<th data-quarto-table-cell-role="th">id_cash</th>
+<th data-quarto-table-cell-role="th">amount</th>
+<th data-quarto-table-cell-role="th">status_cash</th>
+<th data-quarto-table-cell-role="th">created_at_cash</th>
+<th data-quarto-table-cell-role="th">updated_at_cash</th>
+<th data-quarto-table-cell-role="th">user_id</th>
+<th data-quarto-table-cell-role="th">moderated_at</th>
+<th data-quarto-table-cell-role="th">deleted_account_id</th>
+<th data-quarto-table-cell-role="th">reimbursement_date</th>
+<th data-quarto-table-cell-role="th">cash_request_received_date</th>
+<th data-quarto-table-cell-role="th">...</th>
+<th data-quarto-table-cell-role="th">status_fees</th>
+<th data-quarto-table-cell-role="th">category</th>
+<th data-quarto-table-cell-role="th">total_amount</th>
+<th data-quarto-table-cell-role="th">reason</th>
+<th data-quarto-table-cell-role="th">created_at_fees</th>
+<th data-quarto-table-cell-role="th">updated_at_fees</th>
+<th data-quarto-table-cell-role="th">paid_at</th>
+<th data-quarto-table-cell-role="th">from_date</th>
+<th data-quarto-table-cell-role="th">to_date</th>
+<th data-quarto-table-cell-role="th">charge_moment</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td data-quarto-table-cell-role="th">0</td>
+<td>23534</td>
+<td>25.0</td>
+<td>money_back</td>
+<td>2020-10-23 15:20:26.163927+00:00</td>
+<td>2020-12-18 13:08:29.099365+00:00</td>
+<td>21465.0</td>
+<td>NaT</td>
+<td>NaN</td>
+<td>2020-11-10 23:51:00+00:00</td>
+<td>NaT</td>
+<td>...</td>
+<td>accepted</td>
+<td>NaN</td>
+<td>5.0</td>
+<td>Instant Payment Cash Request 23534</td>
+<td>2020-10-23 15:21:35.895711+00:00</td>
+<td>2020-10-23 15:21:35.895740+00:00</td>
+<td>2020-11-06 07:16:22.014422+00:00</td>
+<td>NaT</td>
+<td>NaT</td>
+<td>after</td>
+</tr>
+<tr class="even">
+<td data-quarto-table-cell-role="th">1</td>
+<td>2203</td>
+<td>100.0</td>
+<td>money_back</td>
+<td>2020-05-27 02:26:27.615190+00:00</td>
+<td>2020-06-09 11:25:51.726360+00:00</td>
+<td>2109.0</td>
+<td>2020-05-27 10:02:13.094467+00:00</td>
+<td>NaN</td>
+<td>2020-07-15 02:26:27+00:00</td>
+<td>2020-05-29</td>
+<td>...</td>
+<td>accepted</td>
+<td>NaN</td>
+<td>5.0</td>
+<td>Postpone Cash Request 2203</td>
+<td>2020-06-09 11:25:52.449808+00:00</td>
+<td>2020-10-13 14:25:00.867548+00:00</td>
+<td>NaT</td>
+<td>2020-06-15 02:26:27+00:00</td>
+<td>2020-07-15 02:26:27+00:00</td>
+<td>before</td>
+</tr>
+<tr class="odd">
+<td data-quarto-table-cell-role="th">2</td>
+<td>6098</td>
+<td>100.0</td>
+<td>active</td>
+<td>2020-07-01 09:30:03.145410+00:00</td>
+<td>2020-08-11 22:27:58.240406+00:00</td>
+<td>23328.0</td>
+<td>2020-07-01 16:44:53.070844+00:00</td>
+<td>NaN</td>
+<td>2020-08-03 22:00:00+00:00</td>
+<td>2020-07-03</td>
+<td>...</td>
+<td>cancelled</td>
+<td>NaN</td>
+<td>5.0</td>
+<td>Postpone Cash Request 6098</td>
+<td>2020-08-13 10:58:39.634220+00:00</td>
+<td>2020-10-13 14:25:16.660127+00:00</td>
+<td>NaT</td>
+<td>2020-08-03 22:00:00+00:00</td>
+<td>2020-09-03 10:58:32.274000+00:00</td>
+<td>after</td>
+</tr>
+<tr class="even">
+<td data-quarto-table-cell-role="th">3</td>
+<td>6098</td>
+<td>100.0</td>
+<td>active</td>
+<td>2020-07-01 09:30:03.145410+00:00</td>
+<td>2020-08-11 22:27:58.240406+00:00</td>
+<td>23328.0</td>
+<td>2020-07-01 16:44:53.070844+00:00</td>
+<td>NaN</td>
+<td>2020-08-03 22:00:00+00:00</td>
+<td>2020-07-03</td>
+<td>...</td>
+<td>cancelled</td>
+<td>NaN</td>
+<td>5.0</td>
+<td>Postpone Cash Request 6098</td>
+<td>2020-08-13 10:58:52.603153+00:00</td>
+<td>2020-10-13 14:25:16.661371+00:00</td>
+<td>NaT</td>
+<td>2020-08-03 22:00:00+00:00</td>
+<td>2020-09-03 10:58:32.274000+00:00</td>
+<td>after</td>
+</tr>
+<tr class="odd">
+<td data-quarto-table-cell-role="th">4</td>
+<td>6098</td>
+<td>100.0</td>
+<td>active</td>
+<td>2020-07-01 09:30:03.145410+00:00</td>
+<td>2020-08-11 22:27:58.240406+00:00</td>
+<td>23328.0</td>
+<td>2020-07-01 16:44:53.070844+00:00</td>
+<td>NaN</td>
+<td>2020-08-03 22:00:00+00:00</td>
+<td>2020-07-03</td>
+<td>...</td>
+<td>cancelled</td>
+<td>NaN</td>
+<td>5.0</td>
+<td>Postpone Cash Request 6098</td>
+<td>2020-08-13 11:00:39.879521+00:00</td>
+<td>2020-10-13 14:25:16.662449+00:00</td>
+<td>NaT</td>
+<td>2020-08-03 22:00:00+00:00</td>
+<td>2020-09-01 11:00:34.027000+00:00</td>
+<td>after</td>
+</tr>
+<tr class="even">
+<td data-quarto-table-cell-role="th">...</td>
+<td>...</td>
+<td>...</td>
+<td>...</td>
+<td>...</td>
+<td>...</td>
+<td>...</td>
+<td>...</td>
+<td>...</td>
+<td>...</td>
+<td>...</td>
+<td>...</td>
+<td>...</td>
+<td>...</td>
+<td>...</td>
+<td>...</td>
+<td>...</td>
+<td>...</td>
+<td>...</td>
+<td>...</td>
+<td>...</td>
+<td>...</td>
+</tr>
+<tr class="odd">
+<td data-quarto-table-cell-role="th">21052</td>
+<td>22357</td>
+<td>100.0</td>
+<td>money_back</td>
+<td>2020-10-20 07:58:04.006937+00:00</td>
+<td>2021-02-05 12:19:30.656816+00:00</td>
+<td>82122.0</td>
+<td>NaT</td>
+<td>NaN</td>
+<td>2021-02-05 11:00:00+00:00</td>
+<td>2020-10-21</td>
+<td>...</td>
+<td>accepted</td>
+<td>NaN</td>
+<td>5.0</td>
+<td>Instant Payment Cash Request 22357</td>
+<td>2020-10-20 07:58:19.637461+00:00</td>
+<td>2020-10-20 07:58:19.637491+00:00</td>
+<td>2021-02-05 12:19:30.685779+00:00</td>
+<td>NaT</td>
+<td>NaT</td>
+<td>after</td>
+</tr>
+<tr class="even">
+<td data-quarto-table-cell-role="th">21053</td>
+<td>20256</td>
+<td>100.0</td>
+<td>money_back</td>
+<td>2020-10-10 05:40:55.700422+00:00</td>
+<td>2021-02-05 13:14:19.707627+00:00</td>
+<td>64517.0</td>
+<td>NaT</td>
+<td>NaN</td>
+<td>2021-02-05 11:00:00+00:00</td>
+<td>2020-10-12</td>
+<td>...</td>
+<td>accepted</td>
+<td>NaN</td>
+<td>5.0</td>
+<td>Postpone Cash Request 20256</td>
+<td>2020-10-30 17:08:16.906449+00:00</td>
+<td>2020-10-30 17:08:21.967966+00:00</td>
+<td>2020-10-30 17:08:21.416796+00:00</td>
+<td>2020-11-06 11:00:00+00:00</td>
+<td>2020-12-07 11:00:00+00:00</td>
+<td>before</td>
+</tr>
+<tr class="odd">
+<td data-quarto-table-cell-role="th">21054</td>
+<td>20256</td>
+<td>100.0</td>
+<td>money_back</td>
+<td>2020-10-10 05:40:55.700422+00:00</td>
+<td>2021-02-05 13:14:19.707627+00:00</td>
+<td>64517.0</td>
+<td>NaT</td>
+<td>NaN</td>
+<td>2021-02-05 11:00:00+00:00</td>
+<td>2020-10-12</td>
+<td>...</td>
+<td>accepted</td>
+<td>NaN</td>
+<td>5.0</td>
+<td>Instant Payment Cash Request 20256</td>
+<td>2020-10-10 05:42:11.679401+00:00</td>
+<td>2020-10-13 14:25:03.460352+00:00</td>
+<td>2021-02-05 13:14:19.731397+00:00</td>
+<td>NaT</td>
+<td>NaT</td>
+<td>after</td>
+</tr>
+<tr class="even">
+<td data-quarto-table-cell-role="th">21055</td>
+<td>19886</td>
+<td>100.0</td>
+<td>direct_debit_sent</td>
+<td>2020-10-08 14:16:52.155661+00:00</td>
+<td>2021-01-05 15:45:52.645536+00:00</td>
+<td>44867.0</td>
+<td>NaT</td>
+<td>NaN</td>
+<td>2021-02-05 11:00:00+00:00</td>
+<td>2020-10-10</td>
+<td>...</td>
+<td>accepted</td>
+<td>NaN</td>
+<td>5.0</td>
+<td>Postpone Cash Request 19886</td>
+<td>2020-10-10 21:22:00.083739+00:00</td>
+<td>2020-10-13 14:25:18.501716+00:00</td>
+<td>2020-10-10 21:22:04.456828+00:00</td>
+<td>2020-11-06 22:00:00+00:00</td>
+<td>2020-12-06 11:00:00+00:00</td>
+<td>before</td>
+</tr>
+<tr class="odd">
+<td data-quarto-table-cell-role="th">21056</td>
+<td>19886</td>
+<td>100.0</td>
+<td>direct_debit_sent</td>
+<td>2020-10-08 14:16:52.155661+00:00</td>
+<td>2021-01-05 15:45:52.645536+00:00</td>
+<td>44867.0</td>
+<td>NaT</td>
+<td>NaN</td>
+<td>2021-02-05 11:00:00+00:00</td>
+<td>2020-10-10</td>
+<td>...</td>
+<td>accepted</td>
+<td>NaN</td>
+<td>5.0</td>
+<td>Instant Payment Cash Request 19886</td>
+<td>2020-10-08 14:17:09.126909+00:00</td>
+<td>2020-10-13 14:25:16.470702+00:00</td>
+<td>2021-02-11 04:24:07.529815+00:00</td>
+<td>NaT</td>
+<td>NaT</td>
+<td>after</td>
+</tr>
+</tbody>
+</table>
+
+<p>21057 rows × 30 columns</p>
+</div>
+</div>
+</div>
+</div>
+<blockquote class="blockquote">
+<p>We can now create a new dataframe with only the relevant columns: <code>user_id</code>, <code>type</code>, <code>category</code> and <code>cohort</code></p>
+</blockquote>
+<div id="cell-52" class="cell" data-execution_count="27">
+<div class="sourceCode cell-code" id="cb40"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb40-1"><a href="#cb40-1" aria-hidden="true" tabindex="-1"></a>incidents_df <span class="op">=</span> merged_df[[<span class="st">'user_id'</span>, <span class="st">'type'</span>, <span class="st">'category'</span>, <span class="st">'cohort'</span>]]</span>
+<span id="cb40-2"><a href="#cb40-2" aria-hidden="true" tabindex="-1"></a>incidents_df.sample(<span class="dv">10</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display" data-execution_count="27">
+<div>
+<div>
+
+
+<table class="dataframe table table-sm table-striped small" data-quarto-postprocess="true" data-border="1">
+<thead>
+<tr class="header">
+<th data-quarto-table-cell-role="th"></th>
+<th data-quarto-table-cell-role="th">user_id</th>
+<th data-quarto-table-cell-role="th">type</th>
+<th data-quarto-table-cell-role="th">category</th>
+<th data-quarto-table-cell-role="th">cohort</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td data-quarto-table-cell-role="th">19674</td>
+<td>31572.0</td>
+<td>instant_payment</td>
+<td>NaN</td>
+<td>2020-10</td>
+</tr>
+<tr class="even">
+<td data-quarto-table-cell-role="th">18000</td>
+<td>65562.0</td>
+<td>instant_payment</td>
+<td>NaN</td>
+<td>2020-10</td>
+</tr>
+<tr class="odd">
+<td data-quarto-table-cell-role="th">8739</td>
+<td>5230.0</td>
+<td>instant_payment</td>
+<td>NaN</td>
+<td>2020-09</td>
+</tr>
+<tr class="even">
+<td data-quarto-table-cell-role="th">1654</td>
+<td>31710.0</td>
+<td>incident</td>
+<td>rejected_direct_debit</td>
+<td>2020-07</td>
+</tr>
+<tr class="odd">
+<td data-quarto-table-cell-role="th">3893</td>
+<td>92855.0</td>
+<td>instant_payment</td>
+<td>NaN</td>
+<td>2020-10</td>
+</tr>
+<tr class="even">
+<td data-quarto-table-cell-role="th">6982</td>
+<td>26016.0</td>
+<td>postpone</td>
+<td>NaN</td>
+<td>2020-07</td>
+</tr>
+<tr class="odd">
+<td data-quarto-table-cell-role="th">5924</td>
+<td>35599.0</td>
+<td>incident</td>
+<td>rejected_direct_debit</td>
+<td>2020-08</td>
+</tr>
+<tr class="even">
+<td data-quarto-table-cell-role="th">14511</td>
+<td>45775.0</td>
+<td>incident</td>
+<td>rejected_direct_debit</td>
+<td>2020-09</td>
+</tr>
+<tr class="odd">
+<td data-quarto-table-cell-role="th">3549</td>
+<td>3364.0</td>
+<td>instant_payment</td>
+<td>NaN</td>
+<td>2020-09</td>
+</tr>
+<tr class="even">
+<td data-quarto-table-cell-role="th">6301</td>
+<td>NaN</td>
+<td>incident</td>
+<td>rejected_direct_debit</td>
+<td>2020-06</td>
+</tr>
+</tbody>
+</table>
+
+</div>
+</div>
+</div>
+</div>
+<blockquote class="blockquote">
+<p>We calculate the incident rate by:<br>
+- getting the count of all payments<br>
+- counting all the incidents - all the payments where <code>category</code> is not null.</p>
+<p>We group them by <code>cohort</code> to create a series so we can see the distribution per cohort.</p>
+</blockquote>
+<div id="cell-54" class="cell" data-execution_count="28">
+<div class="sourceCode cell-code" id="cb41"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb41-1"><a href="#cb41-1" aria-hidden="true" tabindex="-1"></a>total_payments <span class="op">=</span> <span class="bu">len</span>(incidents_df)</span>
+<span id="cb41-2"><a href="#cb41-2" aria-hidden="true" tabindex="-1"></a>incidents <span class="op">=</span> incidents_df[incidents_df[<span class="st">'category'</span>].notna()].groupby(<span class="st">'cohort'</span>).size()</span>
+<span id="cb41-3"><a href="#cb41-3" aria-hidden="true" tabindex="-1"></a>incident_rate <span class="op">=</span> (incidents <span class="op">/</span> total_payments) <span class="op">*</span> <span class="dv">100</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<blockquote class="blockquote">
+<p>As <code>incidents</code> now contains a series, we need to convert it to a dataframe to plot it.</p>
+</blockquote>
+<div id="cell-56" class="cell" data-execution_count="29">
+<div class="sourceCode cell-code" id="cb42"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb42-1"><a href="#cb42-1" aria-hidden="true" tabindex="-1"></a>incident_rate_df <span class="op">=</span> incident_rate.to_frame(name<span class="op">=</span><span class="st">'Incident Rate per Cohort'</span>).reset_index()</span>
+<span id="cb42-2"><a href="#cb42-2" aria-hidden="true" tabindex="-1"></a>incident_rate_df.columns <span class="op">=</span> [<span class="st">'Cohort'</span>, <span class="st">'Incident Rate (%)'</span>]</span>
+<span id="cb42-3"><a href="#cb42-3" aria-hidden="true" tabindex="-1"></a>display(incident_rate_df)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display">
+<div>
+<div>
+
+
+<table class="dataframe table table-sm table-striped small" data-quarto-postprocess="true" data-border="1">
+<thead>
+<tr class="header">
+<th data-quarto-table-cell-role="th"></th>
+<th data-quarto-table-cell-role="th">Cohort</th>
+<th data-quarto-table-cell-role="th">Incident Rate (%)</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td data-quarto-table-cell-role="th">0</td>
+<td>2020-05</td>
+<td>0.208957</td>
+</tr>
+<tr class="even">
+<td data-quarto-table-cell-role="th">1</td>
+<td>2020-06</td>
+<td>2.659448</td>
+</tr>
+<tr class="odd">
+<td data-quarto-table-cell-role="th">2</td>
+<td>2020-07</td>
+<td>3.129601</td>
+</tr>
+<tr class="even">
+<td data-quarto-table-cell-role="th">3</td>
+<td>2020-08</td>
+<td>2.365009</td>
+</tr>
+<tr class="odd">
+<td data-quarto-table-cell-role="th">4</td>
+<td>2020-09</td>
+<td>1.828371</td>
+</tr>
+<tr class="even">
+<td data-quarto-table-cell-role="th">5</td>
+<td>2020-10</td>
+<td>0.237451</td>
+</tr>
+</tbody>
+</table>
+
+</div>
+</div>
+</div>
+</div>
+<div class="callout callout-style-default callout-tip callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Tip
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>We will also export this dataframe to a csv file as we’ll need it later.</p>
+</div>
+</div>
+<div id="cell-58" class="cell" data-execution_count="30">
+<div class="sourceCode cell-code" id="cb43"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb43-1"><a href="#cb43-1" aria-hidden="true" tabindex="-1"></a>pd.DataFrame.to_csv(incident_rate_df, <span class="st">'incidents.csv'</span>, index<span class="op">=</span><span class="va">False</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div id="cell-59" class="cell" data-execution_count="31">
+<div class="sourceCode cell-code" id="cb44"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb44-1"><a href="#cb44-1" aria-hidden="true" tabindex="-1"></a>plt.figure(figsize<span class="op">=</span>(<span class="dv">10</span>, <span class="dv">6</span>))</span>
+<span id="cb44-2"><a href="#cb44-2" aria-hidden="true" tabindex="-1"></a>incident_plot <span class="op">=</span> sns.barplot(data<span class="op">=</span>incident_rate_df, x<span class="op">=</span><span class="st">'Cohort'</span>, y<span class="op">=</span><span class="st">'Incident Rate (%)'</span>, palette<span class="op">=</span><span class="st">'magma_r'</span>)</span>
+<span id="cb44-3"><a href="#cb44-3" aria-hidden="true" tabindex="-1"></a>plt.title(<span class="st">'Incident Rate per Cohort'</span>)</span>
+<span id="cb44-4"><a href="#cb44-4" aria-hidden="true" tabindex="-1"></a>plt.ylabel(<span class="st">'Incident Rate (%)'</span>)</span>
+<span id="cb44-5"><a href="#cb44-5" aria-hidden="true" tabindex="-1"></a>plt.xlabel(<span class="st">'Cohort'</span>)</span>
+<span id="cb44-6"><a href="#cb44-6" aria-hidden="true" tabindex="-1"></a>incident_plot.bar_label(incident_plot.containers[<span class="dv">0</span>], fmt<span class="op">=</span><span class="st">'</span><span class="sc">%.2f%%</span><span class="st">'</span>)</span>
+<span id="cb44-7"><a href="#cb44-7" aria-hidden="true" tabindex="-1"></a>plt.show()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="Report_files/figure-html/cell-32-output-1.png" class="img-fluid figure-img"></p>
+</figure>
+</div>
+</div>
+</div>
+</section>
+<section id="revenue-generated-by-the-cohort" class="level3">
+<h3 class="anchored" data-anchor-id="revenue-generated-by-the-cohort">3. Revenue Generated by the Cohort</h3>
+<p><strong>Calculate the total revenue generated by each cohort over months to assess the financial impact of user behavior.</strong></p>
+<blockquote class="blockquote">
+<p>To calculate the revenue generate per cohort we need to again look at both <code>cash_df</code> and <code>fees_df</code> dataframes.<br>
+We will use <code>merge_df</code> with the columns <code>user_id</code> and <code>cohort</code> from <code>cash_df</code> and <code>total_amount</code> from <code>fees_df</code>.<br>
+We’ll also take the <code>paid_at</code> column from <code>fees_df</code> as we’ll consider revenue only payments that have been actually paid - we’ll ignore rows that don’t have a value in the <code>paid_at</code> column.</p>
+</blockquote>
+<div id="cell-62" class="cell" data-execution_count="32">
+<div class="sourceCode cell-code" id="cb45"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb45-1"><a href="#cb45-1" aria-hidden="true" tabindex="-1"></a>revenue_df <span class="op">=</span> merged_df[[<span class="st">'user_id'</span>, <span class="st">'cohort'</span>, <span class="st">'total_amount'</span>, <span class="st">'paid_at'</span>]]</span>
+<span id="cb45-2"><a href="#cb45-2" aria-hidden="true" tabindex="-1"></a>revenue_df.sample(<span class="dv">5</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display" data-execution_count="32">
+<div>
+<div>
+
+
+<table class="dataframe table table-sm table-striped small" data-quarto-postprocess="true" data-border="1">
+<thead>
+<tr class="header">
+<th data-quarto-table-cell-role="th"></th>
+<th data-quarto-table-cell-role="th">user_id</th>
+<th data-quarto-table-cell-role="th">cohort</th>
+<th data-quarto-table-cell-role="th">total_amount</th>
+<th data-quarto-table-cell-role="th">paid_at</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td data-quarto-table-cell-role="th">10653</td>
+<td>23469.0</td>
+<td>2020-08</td>
+<td>5.0</td>
+<td>2020-09-17 09:34:30.318636+00:00</td>
+</tr>
+<tr class="even">
+<td data-quarto-table-cell-role="th">3512</td>
+<td>16974.0</td>
+<td>2020-06</td>
+<td>5.0</td>
+<td>2020-06-23 08:20:52+00:00</td>
+</tr>
+<tr class="odd">
+<td data-quarto-table-cell-role="th">11765</td>
+<td>47417.0</td>
+<td>2020-09</td>
+<td>5.0</td>
+<td>2020-10-22 03:46:33.694509+00:00</td>
+</tr>
+<tr class="even">
+<td data-quarto-table-cell-role="th">8622</td>
+<td>2867.0</td>
+<td>2020-07</td>
+<td>5.0</td>
+<td>2020-10-31 18:55:31.981941+00:00</td>
+</tr>
+<tr class="odd">
+<td data-quarto-table-cell-role="th">20958</td>
+<td>18751.0</td>
+<td>2020-10</td>
+<td>5.0</td>
+<td>2020-10-13 19:44:33.643872+00:00</td>
+</tr>
+</tbody>
+</table>
+
+</div>
+</div>
+</div>
+</div>
+<blockquote class="blockquote">
+<p>Now we can filter out the rows that don’t have a value for <code>paid_at</code></p>
+</blockquote>
+<div id="cell-64" class="cell" data-execution_count="33">
+<div class="sourceCode cell-code" id="cb46"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb46-1"><a href="#cb46-1" aria-hidden="true" tabindex="-1"></a>revenue_df <span class="op">=</span> revenue_df[revenue_df[<span class="st">'paid_at'</span>].notna()]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<blockquote class="blockquote">
+<p>And now we can calculate the revenue generated by each cohort.</p>
+</blockquote>
+<div id="cell-66" class="cell" data-execution_count="34">
+<div class="sourceCode cell-code" id="cb47"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb47-1"><a href="#cb47-1" aria-hidden="true" tabindex="-1"></a>cohort_revenue <span class="op">=</span> revenue_df.groupby(<span class="st">'cohort'</span>)[<span class="st">'total_amount'</span>].<span class="bu">sum</span>()</span>
+<span id="cb47-2"><a href="#cb47-2" aria-hidden="true" tabindex="-1"></a>cohort_revenue</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display" data-execution_count="34">
+<pre><code>cohort
+2020-05      290.0
+2020-06     4155.0
+2020-07     5430.0
+2020-08    12445.0
+2020-09    17715.0
+2020-10    37065.0
+2020-11      560.0
+Freq: M, Name: total_amount, dtype: float64</code></pre>
+</div>
+</div>
+<div id="cell-67" class="cell" data-execution_count="35">
+<div class="sourceCode cell-code" id="cb49"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb49-1"><a href="#cb49-1" aria-hidden="true" tabindex="-1"></a><span class="co"># We save a csv for later use</span></span>
+<span id="cb49-2"><a href="#cb49-2" aria-hidden="true" tabindex="-1"></a>pd.DataFrame.to_csv(revenue_df, <span class="st">'revenue.csv'</span>, index<span class="op">=</span><span class="va">False</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div id="cell-68" class="cell" data-execution_count="36">
+<div class="sourceCode cell-code" id="cb50"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb50-1"><a href="#cb50-1" aria-hidden="true" tabindex="-1"></a>plt.figure(figsize<span class="op">=</span>(<span class="dv">10</span>, <span class="dv">6</span>))</span>
+<span id="cb50-2"><a href="#cb50-2" aria-hidden="true" tabindex="-1"></a>revenue_plot <span class="op">=</span> sns.barplot(x<span class="op">=</span>cohort_revenue.index.astype(<span class="bu">str</span>), y<span class="op">=</span>cohort_revenue.values, palette<span class="op">=</span><span class="st">'magma_r'</span>)</span>
+<span id="cb50-3"><a href="#cb50-3" aria-hidden="true" tabindex="-1"></a>plt.title(<span class="st">'Revenue Generated per Cohort'</span>)</span>
+<span id="cb50-4"><a href="#cb50-4" aria-hidden="true" tabindex="-1"></a>plt.xlabel(<span class="st">'Cohort'</span>)</span>
+<span id="cb50-5"><a href="#cb50-5" aria-hidden="true" tabindex="-1"></a>plt.ylabel(<span class="st">'Revenue'</span>)</span>
+<span id="cb50-6"><a href="#cb50-6" aria-hidden="true" tabindex="-1"></a><span class="co"># plt.xticks(rotation=45)</span></span>
+<span id="cb50-7"><a href="#cb50-7" aria-hidden="true" tabindex="-1"></a>plt.tight_layout()</span>
+<span id="cb50-8"><a href="#cb50-8" aria-hidden="true" tabindex="-1"></a>revenue_plot.bar_label(revenue_plot.containers[<span class="dv">0</span>], fmt<span class="op">=</span><span class="st">'</span><span class="sc">{:,.0f}</span><span class="st">'</span>)</span>
+<span id="cb50-9"><a href="#cb50-9" aria-hidden="true" tabindex="-1"></a>plt.show()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="Report_files/figure-html/cell-37-output-1.png" class="img-fluid figure-img"></p>
+</figure>
+</div>
+</div>
+</div>
+</section>
+<section id="new-relevant-metric" class="level3">
+<h3 class="anchored" data-anchor-id="new-relevant-metric">4. New Relevant Metric</h3>
+<p><strong>Propose and calculate a new relevant metric that provides additional insights into user behavior or the performance of IronHack Payments’ services.</strong></p>
+<blockquote class="blockquote">
+<p>Given the data we have there are a couple of relevant metrics we could investigate that would provide additional insights into user behaviour.<br>
+One such metric could be <strong>churn rate</strong> - the percentage of users who stop using the IronHack Payments.</p>
+<p>To calculate the <strong>churn_rate</strong> we will use the <code>cash_df</code> dataframe and calculate the percentage of deleted user accounts per cohort.</p>
+</blockquote>
+<div id="cell-71" class="cell" data-execution_count="37">
+<div class="sourceCode cell-code" id="cb51"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb51-1"><a href="#cb51-1" aria-hidden="true" tabindex="-1"></a>deleted_accounts <span class="op">=</span> cash_df.groupby(<span class="st">'cohort'</span>)[<span class="st">'deleted_account_id'</span>].count()</span>
+<span id="cb51-2"><a href="#cb51-2" aria-hidden="true" tabindex="-1"></a>deleted_df <span class="op">=</span> deleted_accounts</span>
+<span id="cb51-3"><a href="#cb51-3" aria-hidden="true" tabindex="-1"></a>deleted_df</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display" data-execution_count="37">
+<pre><code>cohort
+2019-11      0
+2019-12     60
+2020-01     47
+2020-02     27
+2020-03     37
+2020-04     55
+2020-05    110
+2020-06    364
+2020-07    442
+2020-08    327
+2020-09    419
+2020-10    213
+2020-11      3
+Freq: M, Name: deleted_account_id, dtype: int64</code></pre>
+</div>
+</div>
+<div id="cell-72" class="cell" data-execution_count="38">
+<div class="sourceCode cell-code" id="cb53"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb53-1"><a href="#cb53-1" aria-hidden="true" tabindex="-1"></a><span class="co"># we already have a dataframe with created account per cohort</span></span>
+<span id="cb53-2"><a href="#cb53-2" aria-hidden="true" tabindex="-1"></a>churn_df <span class="op">=</span> pd.merge(left<span class="op">=</span>deleted_df, right<span class="op">=</span>cohort_counts.reset_index(), left_on<span class="op">=</span><span class="st">'cohort'</span>, right_on<span class="op">=</span><span class="st">'cohort'</span>)</span>
+<span id="cb53-3"><a href="#cb53-3" aria-hidden="true" tabindex="-1"></a>churn_df.columns <span class="op">=</span> [[<span class="st">'cohort'</span>, <span class="st">'deleted_accounts'</span>, <span class="st">'new_accounts'</span>]]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div class="callout callout-style-default callout-tip callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Tip
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>To calculate the <strong>churn rate</strong> we use the formula:<br>
+<span class="math display">\[
+{Churn Rate} = \frac{Number of Deleted Accounts}{Number of New Accounts + Number of Deleted Accounts} \times 100
+\]</span></p>
+</div>
+</div>
+<div id="cell-74" class="cell" data-execution_count="39">
+<div class="sourceCode cell-code" id="cb54"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb54-1"><a href="#cb54-1" aria-hidden="true" tabindex="-1"></a><span class="co"># we define a function that calculates the churn rate for a row</span></span>
+<span id="cb54-2"><a href="#cb54-2" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> calculate_churn_rate(row):</span>
+<span id="cb54-3"><a href="#cb54-3" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> row[<span class="st">'new_accounts'</span>] <span class="op">==</span> <span class="dv">0</span>:  <span class="co"># To avoid division by zero</span></span>
+<span id="cb54-4"><a href="#cb54-4" aria-hidden="true" tabindex="-1"></a>        <span class="cf">return</span> <span class="dv">0</span></span>
+<span id="cb54-5"><a href="#cb54-5" aria-hidden="true" tabindex="-1"></a>    <span class="cf">else</span>:</span>
+<span id="cb54-6"><a href="#cb54-6" aria-hidden="true" tabindex="-1"></a>        <span class="cf">return</span> <span class="bu">float</span>(row[<span class="st">'deleted_accounts'</span>] <span class="op">/</span> (row[<span class="st">'new_accounts'</span>] <span class="op">+</span> row[<span class="st">'deleted_accounts'</span>]) <span class="op">*</span> <span class="dv">100</span>)</span>
+<span id="cb54-7"><a href="#cb54-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb54-8"><a href="#cb54-8" aria-hidden="true" tabindex="-1"></a><span class="co"># and we call `.apply` on the `churn_df`; this will return a series</span></span>
+<span id="cb54-9"><a href="#cb54-9" aria-hidden="true" tabindex="-1"></a>churn_rates <span class="op">=</span> churn_df.<span class="bu">apply</span>(calculate_churn_rate, axis<span class="op">=</span><span class="dv">1</span>)</span>
+<span id="cb54-10"><a href="#cb54-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb54-11"><a href="#cb54-11" aria-hidden="true" tabindex="-1"></a><span class="co"># and we assign the series to a new column</span></span>
+<span id="cb54-12"><a href="#cb54-12" aria-hidden="true" tabindex="-1"></a>churn_df[<span class="st">'churn_rate'</span>] <span class="op">=</span> churn_rates</span>
+<span id="cb54-13"><a href="#cb54-13" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb54-14"><a href="#cb54-14" aria-hidden="true" tabindex="-1"></a>churn_df</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display" data-execution_count="39">
+<div>
+<div>
+
+
+<table class="dataframe table table-sm table-striped small" data-quarto-postprocess="true" data-border="1">
+<thead>
+<tr class="header">
+<th data-quarto-table-cell-role="th"></th>
+<th data-quarto-table-cell-role="th">cohort</th>
+<th data-quarto-table-cell-role="th">deleted_accounts</th>
+<th data-quarto-table-cell-role="th">new_accounts</th>
+<th data-quarto-table-cell-role="th">churn_rate</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td data-quarto-table-cell-role="th">0</td>
+<td>2019-12</td>
+<td>60</td>
+<td>289</td>
+<td>17.191977</td>
+</tr>
+<tr class="even">
+<td data-quarto-table-cell-role="th">1</td>
+<td>2020-01</td>
+<td>47</td>
+<td>223</td>
+<td>17.407407</td>
+</tr>
+<tr class="odd">
+<td data-quarto-table-cell-role="th">2</td>
+<td>2020-02</td>
+<td>27</td>
+<td>184</td>
+<td>12.796209</td>
+</tr>
+<tr class="even">
+<td data-quarto-table-cell-role="th">3</td>
+<td>2020-03</td>
+<td>37</td>
+<td>244</td>
+<td>13.167260</td>
+</tr>
+<tr class="odd">
+<td data-quarto-table-cell-role="th">4</td>
+<td>2020-04</td>
+<td>55</td>
+<td>473</td>
+<td>10.416667</td>
+</tr>
+<tr class="even">
+<td data-quarto-table-cell-role="th">5</td>
+<td>2020-05</td>
+<td>110</td>
+<td>837</td>
+<td>11.615628</td>
+</tr>
+<tr class="odd">
+<td data-quarto-table-cell-role="th">6</td>
+<td>2020-06</td>
+<td>364</td>
+<td>2615</td>
+<td>12.218865</td>
+</tr>
+<tr class="even">
+<td data-quarto-table-cell-role="th">7</td>
+<td>2020-07</td>
+<td>442</td>
+<td>3601</td>
+<td>10.932476</td>
+</tr>
+<tr class="odd">
+<td data-quarto-table-cell-role="th">8</td>
+<td>2020-08</td>
+<td>327</td>
+<td>3417</td>
+<td>8.733974</td>
+</tr>
+<tr class="even">
+<td data-quarto-table-cell-role="th">9</td>
+<td>2020-09</td>
+<td>419</td>
+<td>4221</td>
+<td>9.030172</td>
+</tr>
+<tr class="odd">
+<td data-quarto-table-cell-role="th">10</td>
+<td>2020-10</td>
+<td>213</td>
+<td>7725</td>
+<td>2.683296</td>
+</tr>
+</tbody>
+</table>
+
+</div>
+</div>
+</div>
+</div>
+<div id="cell-75" class="cell" data-execution_count="40">
+<div class="sourceCode cell-code" id="cb55"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb55-1"><a href="#cb55-1" aria-hidden="true" tabindex="-1"></a>plt.figure(figsize<span class="op">=</span>(<span class="dv">10</span>, <span class="dv">6</span>))</span>
+<span id="cb55-2"><a href="#cb55-2" aria-hidden="true" tabindex="-1"></a>churn_plot <span class="op">=</span> sns.barplot(x<span class="op">=</span>churn_df[<span class="st">'cohort'</span>].unstack(<span class="dv">0</span>), y<span class="op">=</span>churn_rates.values, data<span class="op">=</span>churn_df, palette<span class="op">=</span><span class="st">'magma_r'</span>)</span>
+<span id="cb55-3"><a href="#cb55-3" aria-hidden="true" tabindex="-1"></a>plt.title(<span class="st">'Churn Rate per Cohort'</span>)</span>
+<span id="cb55-4"><a href="#cb55-4" aria-hidden="true" tabindex="-1"></a>plt.xlabel(<span class="st">'Cohort'</span>)</span>
+<span id="cb55-5"><a href="#cb55-5" aria-hidden="true" tabindex="-1"></a>plt.ylabel(<span class="st">'Churn Rate (%)'</span>)</span>
+<span id="cb55-6"><a href="#cb55-6" aria-hidden="true" tabindex="-1"></a><span class="co"># plt.xticks(rotation=45)</span></span>
+<span id="cb55-7"><a href="#cb55-7" aria-hidden="true" tabindex="-1"></a>churn_plot.bar_label(churn_plot.containers[<span class="dv">0</span>], fmt<span class="op">=</span><span class="st">'</span><span class="sc">%.1f%%</span><span class="st">'</span>)</span>
+<span id="cb55-8"><a href="#cb55-8" aria-hidden="true" tabindex="-1"></a>plt.show()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="Report_files/figure-html/cell-41-output-1.png" class="img-fluid figure-img"></p>
+</figure>
+</div>
+</div>
+</div>
+</section>
+</section>
+<section id="final-considerations" class="level2">
+<h2 class="anchored" data-anchor-id="final-considerations">Final considerations</h2>
+<p>The exported CSV files will be used for importing in Tableau to generate a dashboard.</p>
+</section>
+
+</main>
+<!-- /main column -->
+<script id="quarto-html-after-body" type="application/javascript">
+window.document.addEventListener("DOMContentLoaded", function (event) {
+  const toggleBodyColorMode = (bsSheetEl) => {
+    const mode = bsSheetEl.getAttribute("data-mode");
+    const bodyEl = window.document.querySelector("body");
+    if (mode === "dark") {
+      bodyEl.classList.add("quarto-dark");
+      bodyEl.classList.remove("quarto-light");
+    } else {
+      bodyEl.classList.add("quarto-light");
+      bodyEl.classList.remove("quarto-dark");
+    }
+  }
+  const toggleBodyColorPrimary = () => {
+    const bsSheetEl = window.document.querySelector("link#quarto-bootstrap");
+    if (bsSheetEl) {
+      toggleBodyColorMode(bsSheetEl);
+    }
+  }
+  toggleBodyColorPrimary();  
+  const icon = "";
+  const anchorJS = new window.AnchorJS();
+  anchorJS.options = {
+    placement: 'right',
+    icon: icon
+  };
+  anchorJS.add('.anchored');
+  const isCodeAnnotation = (el) => {
+    for (const clz of el.classList) {
+      if (clz.startsWith('code-annotation-')) {                     
+        return true;
+      }
+    }
+    return false;
+  }
+  const clipboard = new window.ClipboardJS('.code-copy-button', {
+    text: function(trigger) {
+      const codeEl = trigger.previousElementSibling.cloneNode(true);
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+    }
+  });
+  clipboard.on('success', function(e) {
+    // button target
+    const button = e.trigger;
+    // don't keep focus
+    button.blur();
+    // flash "checked"
+    button.classList.add('code-copy-button-checked');
+    var currentTitle = button.getAttribute("title");
+    button.setAttribute("title", "Copied!");
+    let tooltip;
+    if (window.bootstrap) {
+      button.setAttribute("data-bs-toggle", "tooltip");
+      button.setAttribute("data-bs-placement", "left");
+      button.setAttribute("data-bs-title", "Copied!");
+      tooltip = new bootstrap.Tooltip(button, 
+        { trigger: "manual", 
+          customClass: "code-copy-button-tooltip",
+          offset: [0, -8]});
+      tooltip.show();    
+    }
+    setTimeout(function() {
+      if (tooltip) {
+        tooltip.hide();
+        button.removeAttribute("data-bs-title");
+        button.removeAttribute("data-bs-toggle");
+        button.removeAttribute("data-bs-placement");
+      }
+      button.setAttribute("title", currentTitle);
+      button.classList.remove('code-copy-button-checked');
+    }, 1000);
+    // clear code selection
+    e.clearSelection();
+  });
+  function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+    const config = {
+      allowHTML: true,
+      maxWidth: 500,
+      delay: 100,
+      arrow: false,
+      appendTo: function(el) {
+          return el.parentElement;
+      },
+      interactive: true,
+      interactiveBorder: 10,
+      theme: 'quarto',
+      placement: 'bottom-start',
+    };
+    if (contentFn) {
+      config.content = contentFn;
+    }
+    if (onTriggerFn) {
+      config.onTrigger = onTriggerFn;
+    }
+    if (onUntriggerFn) {
+      config.onUntrigger = onUntriggerFn;
+    }
+    window.tippy(el, config); 
+  }
+  const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+  for (var i=0; i<noterefs.length; i++) {
+    const ref = noterefs[i];
+    tippyHover(ref, function() {
+      // use id or data attribute instead here
+      let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+      try { href = new URL(href).hash; } catch {}
+      const id = href.replace(/^#\/?/, "");
+      const note = window.document.getElementById(id);
+      return note.innerHTML;
+    });
+  }
+  const xrefs = window.document.querySelectorAll('a.quarto-xref');
+  const processXRef = (id, note) => {
+    // Strip column container classes
+    const stripColumnClz = (el) => {
+      el.classList.remove("page-full", "page-columns");
+      if (el.children) {
+        for (const child of el.children) {
+          stripColumnClz(child);
+        }
+      }
+    }
+    stripColumnClz(note)
+    if (id === null || id.startsWith('sec-')) {
+      // Special case sections, only their first couple elements
+      const container = document.createElement("div");
+      if (note.children && note.children.length > 2) {
+        container.appendChild(note.children[0].cloneNode(true));
+        for (let i = 1; i < note.children.length; i++) {
+          const child = note.children[i];
+          if (child.tagName === "P" && child.innerText === "") {
+            continue;
+          } else {
+            container.appendChild(child.cloneNode(true));
+            break;
+          }
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(container);
+        }
+        return container.innerHTML
+      } else {
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        return note.innerHTML;
+      }
+    } else {
+      // Remove any anchor links if they are present
+      const anchorLink = note.querySelector('a.anchorjs-link');
+      if (anchorLink) {
+        anchorLink.remove();
+      }
+      if (window.Quarto?.typesetMath) {
+        window.Quarto.typesetMath(note);
+      }
+      // TODO in 1.5, we should make sure this works without a callout special case
+      if (note.classList.contains("callout")) {
+        return note.outerHTML;
+      } else {
+        return note.innerHTML;
+      }
+    }
+  }
+  for (var i=0; i<xrefs.length; i++) {
+    const xref = xrefs[i];
+    tippyHover(xref, undefined, function(instance) {
+      instance.disable();
+      let url = xref.getAttribute('href');
+      let hash = undefined; 
+      if (url.startsWith('#')) {
+        hash = url;
+      } else {
+        try { hash = new URL(url).hash; } catch {}
+      }
+      if (hash) {
+        const id = hash.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note !== null) {
+          try {
+            const html = processXRef(id, note.cloneNode(true));
+            instance.setContent(html);
+          } finally {
+            instance.enable();
+            instance.show();
+          }
+        } else {
+          // See if we can fetch this
+          fetch(url.split('#')[0])
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.getElementById(id);
+            if (note !== null) {
+              const html = processXRef(id, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      } else {
+        // See if we can fetch a full url (with no hash to target)
+        // This is a special case and we should probably do some content thinning / targeting
+        fetch(url)
+        .then(res => res.text())
+        .then(html => {
+          const parser = new DOMParser();
+          const htmlDoc = parser.parseFromString(html, "text/html");
+          const note = htmlDoc.querySelector('main.content');
+          if (note !== null) {
+            // This should only happen for chapter cross references
+            // (since there is no id in the URL)
+            // remove the first header
+            if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+              note.children[0].remove();
+            }
+            const html = processXRef(null, note);
+            instance.setContent(html);
+          } 
+        }).finally(() => {
+          instance.enable();
+          instance.show();
+        });
+      }
+    }, function(instance) {
+    });
+  }
+      let selectedAnnoteEl;
+      const selectorForAnnotation = ( cell, annotation) => {
+        let cellAttr = 'data-code-cell="' + cell + '"';
+        let lineAttr = 'data-code-annotation="' +  annotation + '"';
+        const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+        return selector;
+      }
+      const selectCodeLines = (annoteEl) => {
+        const doc = window.document;
+        const targetCell = annoteEl.getAttribute("data-target-cell");
+        const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+        const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+        const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+        const lineIds = lines.map((line) => {
+          return targetCell + "-" + line;
+        })
+        let top = null;
+        let height = null;
+        let parent = null;
+        if (lineIds.length > 0) {
+            //compute the position of the single el (top and bottom and make a div)
+            const el = window.document.getElementById(lineIds[0]);
+            top = el.offsetTop;
+            height = el.offsetHeight;
+            parent = el.parentElement.parentElement;
+          if (lineIds.length > 1) {
+            const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+            const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+            height = bottom - top;
+          }
+          if (top !== null && height !== null && parent !== null) {
+            // cook up a div (if necessary) and position it 
+            let div = window.document.getElementById("code-annotation-line-highlight");
+            if (div === null) {
+              div = window.document.createElement("div");
+              div.setAttribute("id", "code-annotation-line-highlight");
+              div.style.position = 'absolute';
+              parent.appendChild(div);
+            }
+            div.style.top = top - 2 + "px";
+            div.style.height = height + 4 + "px";
+            div.style.left = 0;
+            let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+            if (gutterDiv === null) {
+              gutterDiv = window.document.createElement("div");
+              gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+              gutterDiv.style.position = 'absolute';
+              const codeCell = window.document.getElementById(targetCell);
+              const gutter = codeCell.querySelector('.code-annotation-gutter');
+              gutter.appendChild(gutterDiv);
+            }
+            gutterDiv.style.top = top - 2 + "px";
+            gutterDiv.style.height = height + 4 + "px";
+          }
+          selectedAnnoteEl = annoteEl;
+        }
+      };
+      const unselectCodeLines = () => {
+        const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+        elementsIds.forEach((elId) => {
+          const div = window.document.getElementById(elId);
+          if (div) {
+            div.remove();
+          }
+        });
+        selectedAnnoteEl = undefined;
+      };
+        // Handle positioning of the toggle
+    window.addEventListener(
+      "resize",
+      throttle(() => {
+        elRect = undefined;
+        if (selectedAnnoteEl) {
+          selectCodeLines(selectedAnnoteEl);
+        }
+      }, 10)
+    );
+    function throttle(fn, ms) {
+    let throttle = false;
+    let timer;
+      return (...args) => {
+        if(!throttle) { // first call gets through
+            fn.apply(this, args);
+            throttle = true;
+        } else { // all the others get throttled
+            if(timer) clearTimeout(timer); // cancel #2
+            timer = setTimeout(() => {
+              fn.apply(this, args);
+              timer = throttle = false;
+            }, ms);
+        }
+      };
+    }
+      // Attach click handler to the DT
+      const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+      for (const annoteDlNode of annoteDls) {
+        annoteDlNode.addEventListener('click', (event) => {
+          const clickedEl = event.target;
+          if (clickedEl !== selectedAnnoteEl) {
+            unselectCodeLines();
+            const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+            if (activeEl) {
+              activeEl.classList.remove('code-annotation-active');
+            }
+            selectCodeLines(clickedEl);
+            clickedEl.classList.add('code-annotation-active');
+          } else {
+            // Unselect the line
+            unselectCodeLines();
+            clickedEl.classList.remove('code-annotation-active');
+          }
+        });
+      }
+  const findCites = (el) => {
+    const parentEl = el.parentElement;
+    if (parentEl) {
+      const cites = parentEl.dataset.cites;
+      if (cites) {
+        return {
+          el,
+          cites: cites.split(' ')
+        };
+      } else {
+        return findCites(el.parentElement)
+      }
+    } else {
+      return undefined;
+    }
+  };
+  var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+  for (var i=0; i<bibliorefs.length; i++) {
+    const ref = bibliorefs[i];
+    const citeInfo = findCites(ref);
+    if (citeInfo) {
+      tippyHover(citeInfo.el, function() {
+        var popup = window.document.createElement('div');
+        citeInfo.cites.forEach(function(cite) {
+          var citeDiv = window.document.createElement('div');
+          citeDiv.classList.add('hanging-indent');
+          citeDiv.classList.add('csl-entry');
+          var biblioDiv = window.document.getElementById('ref-' + cite);
+          if (biblioDiv) {
+            citeDiv.innerHTML = biblioDiv.innerHTML;
+          }
+          popup.appendChild(citeDiv);
+        });
+        return popup.innerHTML;
+      });
+    }
+  }
+});
+</script>
+</div> <!-- /content -->
+
+
+
+
+</body></html>
